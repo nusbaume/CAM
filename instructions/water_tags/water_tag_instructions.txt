@@ -1,0 +1,43 @@
+Steps for setting up a water tracer simulation in iCAM6:
+
+NOTE:  This is developmental code, so these instructions may
+       change in the future.
+
+1.  Create new case (i.e. run iCESM1.2/scripts/create_newcase).
+
+2.  Run case.setup
+
+3.  Add "-water_tracer h2o_h216o_hdo_h218o" to CAM_CONFIG_OPTS in env_build.xml.
+    Please note that this is needed even if you aren't simulating water isotopes.
+
+4.  Add the line "-water_tag_num N" to the CAM_CONFIG_OPTS in env_build.xml,
+    where "N" is the number of water tracers you are using.  So, if using the
+    provided example tracers, then you will want to set N to two, or "-water_tag_num 2".
+    You will then need to increase this number by one for every additional water tracer
+    or tag you add to the simulation.
+
+5.  Copy the example "atm_import_export.F90" file into your SourceMods/src.cam directory.
+    This file is where the actual water tracer boundaries are specified, and will
+    thus need to be modified for any additional water tracers.  These additions are
+    located in the "atm_import" subroutine, in the "wtrc_nsrfvap" do-loop.
+
+6.  Copy the example "atm_comp_mct.F90" file into your SourceMods/src.cam directory.
+    This file will not need to be modified further.
+
+7.  Copy the example "user_nl_cam" file into your case directory (or add the contents to your
+    user_nl_cam file if you have already modified it).  For every new water tracer that is added,
+    you will need to add the tracer names similar to the example "LND" and "NPAC" tracers already provided
+    to the relevant namelist variables.  You will also need to add an additional 7 "H2O" quantities to the
+    "wtrc_species_names" variable, and an additional series of "VAPOR, LIQUID, ICE, etc." to the "wtrc_type_names" variable.
+
+8.  Build the model (run case.build script in case directory).
+
+9.  Run the model  (run case.submit script in case directory).
+
+10. Once the model is finished running, you should find variables with the same names you provided in user_nl_cam
+    in the history files that contain the associated water mass quantities for your water tracer.  Please note that
+    tracers are initialized to match standard model water, so it usually takes ~3 months before the tracers become
+    noticeabily different from regular model water.  If you are having trouble seeing the spatial patterns in the
+    tracers, then I would recommend calculating the tracer ratio (R_tag = TAG/H2O) and plotting that instead.
+
+Good luck!
